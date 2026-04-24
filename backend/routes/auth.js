@@ -36,11 +36,16 @@ router.post('/register', [
   const { name, email, password, role, phone, ...additionalData } = req.body;
 
   try {
+    console.log(`📝 Registration started for: ${email}`);
+    
+    console.log('STEP 1: Checking if user exists...');
     let user = await User.findOne({ email });
     if (user) {
+      console.log('User already exists');
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    console.log('STEP 2: Creating user instance...');
     user = new User({
       name,
       email,
@@ -49,18 +54,24 @@ router.post('/register', [
       ...(role === 'delivery_boy' && { phone })
     });
 
+    console.log('STEP 3: Hashing password...');
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
+    
+    console.log('STEP 4: Saving user to DB...');
     await user.save();
+    console.log('✅ STEP 5: User saved successfully.');
 
     // Create role-specific document
     if (role === 'owner') {
+      console.log('STEP 6: Creating owner profile...');
       const owner = new Owner({
         user: user._id,
         ...additionalData
       });
       await owner.save();
     } else if (role === 'delivery_boy') {
+      console.log('STEP 6: Creating delivery partner profile...');
       const deliveryBoy = new DeliveryBoy({
         user: user._id,
         ...additionalData
@@ -75,9 +86,14 @@ router.post('/register', [
       }
     };
 
+    console.log('STEP 7: Signing JWT...');
     jwt.sign(payload, process.env.JWT_SECRET || 'your_jwt_secret', { expiresIn: '7d' }, async (err, token) => {
-      if (err) throw err;
+      if (err) {
+        console.error('JWT Sign Error:', err);
+        throw err;
+      }
 
+      console.log('STEP 8: Sending welcome email...');
       // Send welcome email (don't wait for it to complete)
       sendWelcomeEmail(user.email, user.name, user.role)
         .then(result => {
@@ -91,10 +107,12 @@ router.post('/register', [
           console.error('📧 Email error:', error.message);
         });
 
+      console.log('✅ Registration complete, sending response.');
       res.json({ token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone || null, role: user.role, profilePicture: user.profilePicture } });
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('🔥 Registration Error:', err.message);
+    console.error('Stack:', err.stack);
     res.status(500).json({ message: 'Server error', error: err.message, stack: err.stack });
   }
 });

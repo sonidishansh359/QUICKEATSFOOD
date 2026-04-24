@@ -73,7 +73,7 @@ export const DeliveryBoyTrackingComponent: React.FC<DeliveryTrackingProps> = ({
 
   // Normalize API base URL to always include '/api'
   const API_BASE_URL = (() => {
-    const base = (import.meta as any).env?.VITE_API_URL as string | undefined;
+    const base = import.meta.env.VITE_API_URL as string | undefined;
     if (!base) return 'http://localhost:5000/api';
     return base.endsWith('/api') ? base : `${base}/api`;
   })();
@@ -156,7 +156,7 @@ export const DeliveryBoyTrackingComponent: React.FC<DeliveryTrackingProps> = ({
   useEffect(() => {
     // Determine socket URL from env or window location
     const getSocketUrl = () => {
-      const envUrl = (import.meta as any).env?.VITE_API_URL;
+      const envUrl = import.meta.env.VITE_API_URL;
       if (envUrl) {
         return envUrl.replace(/\/api$/, '').replace(/\/$/, '');
       }

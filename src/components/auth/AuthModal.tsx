@@ -187,7 +187,7 @@ export function AuthModal({ isOpen, onClose, role, initialMode = 'login' }: Auth
     }
   };
 
-  const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL?.endsWith('/api') ? (import.meta as any).env?.VITE_API_URL : `${(import.meta as any).env?.VITE_API_URL || 'http://localhost:5000'}/api`);
+  const API_BASE_URL = (import.meta.env.VITE_API_URL?.endsWith('/api') ? import.meta.env.VITE_API_URL : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

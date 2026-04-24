@@ -95,7 +95,7 @@ export const DeliveryReportModal: React.FC<DeliveryReportModalProps> = ({ isOpen
     const dateRangeRef = useRef(dateRange);
     const customFromRef = useRef(customFrom);
     const customToRef = useRef(customTo);
-    const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+    const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const API_URL = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 
     const buildParams = useCallback(() => {

@@ -45,7 +45,7 @@ export function AuthForm({ role, onBack }: AuthFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL?.endsWith('/api') ? (import.meta as any).env?.VITE_API_URL : `${(import.meta as any).env?.VITE_API_URL || 'http://localhost:5000'}/api`);
+  const API_BASE_URL = (import.meta.env.VITE_API_URL?.endsWith('/api') ? import.meta.env.VITE_API_URL : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

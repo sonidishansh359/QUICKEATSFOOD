@@ -9,7 +9,7 @@ import ringAudio from '@/assets/ring.mp3';
 import { locationService } from '@/lib/locationService';
 import { getRestaurantStatus } from '@/utils/restaurantStatus';
 
-const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const API_BASE_URL = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 const SOCKET_BASE_URL = API_ORIGIN.replace(/\/api$/, '');
 

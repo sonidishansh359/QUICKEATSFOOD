@@ -39,7 +39,7 @@ class LocationSocketService {
     this.userId = userId;
     this.userRole = userRole;
 
-    const rawUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+    const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const serverUrl = typeof rawUrl === 'string' && rawUrl.endsWith('/api') ? rawUrl.replace(/\/api$/, '') : rawUrl;
 
     console.log('📡 Connecting to Socket.io server...');

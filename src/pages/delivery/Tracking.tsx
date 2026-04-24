@@ -65,13 +65,13 @@ const DeliveryTracking: React.FC = () => {
         }
 
         // Normalize API base from env
-        const envApi = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+        const envApi = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const apiBase = envApi.replace(/\/$/, '').endsWith('/api') ? envApi.replace(/\/$/, '') : `${envApi.replace(/\/$/, '')}/api`;
 
         console.log('🔧 API Config:', {
           envApi,
           apiBase,
-          envViteApiUrl: (import.meta as any).env?.VITE_API_URL
+          envViteApiUrl: import.meta.env.VITE_API_URL
         });
 
         const response = await fetch(`${apiBase}/tracking/delivery-boy/${orderId}`, {
@@ -183,7 +183,7 @@ const DeliveryTracking: React.FC = () => {
     const token = getAuthToken();
 
     // Normalize socket origin from env
-    const envApi = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+    const envApi = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const socketOrigin = envApi.replace(/\/$/, '').replace(/\/api$/, '');
 
     const socket = io(socketOrigin, {

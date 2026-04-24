@@ -44,10 +44,10 @@ interface OwnerDataContextType {
 const OwnerDataContext = createContext<OwnerDataContextType | undefined>(undefined);
 
 // Normalize API and socket origins from env; fall back to localhost
-const envApiBase = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+const envApiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const normalizedApi = envApiBase.replace(/\/$/, '');
 const API_BASE_URL = normalizedApi.endsWith('/api') ? normalizedApi : `${normalizedApi}/api`;
-const SOCKET_URL = ((import.meta as any).env?.VITE_SOCKET_URL || envApiBase).replace(/\/$/, '').replace(/\/api$/, '');
+const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || envApiBase).replace(/\/$/, '').replace(/\/api$/, '');
 
 const getStorageKey = (userId?: string, key: string = '') =>
   userId ? `owner_data_${userId}_${key}` : `owner_data_${key}`;

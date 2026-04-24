@@ -44,7 +44,7 @@ export function StatsSection() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+                const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                 const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
                 const response = await fetch(`${API_BASE_URL}/stats`);
                 if (response.ok) {

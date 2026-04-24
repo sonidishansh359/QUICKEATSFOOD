@@ -104,7 +104,7 @@ export default function UserCart() {
     // Fetch settings to get tax rate
     const fetchSettings = async () => {
       try {
-        const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+        const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         const API_BASE_URL = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
         const response = await fetch(`${API_BASE_URL}/settings`);
         if (response.ok) {
@@ -136,7 +136,7 @@ export default function UserCart() {
       if (!restaurantId) return;
 
       try {
-        const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+        const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         const API_BASE_URL = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
         const response = await fetch(`${API_BASE_URL}/promo-codes/restaurant/${restaurantId}`);
         if (response.ok) {
@@ -225,7 +225,7 @@ export default function UserCart() {
             const storedAuth = localStorage.getItem('quickeats_auth');
             if (storedAuth) {
               const { token } = JSON.parse(storedAuth);
-              const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+              const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
               const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
               await fetch(`${API_BASE_URL}/locations/user`, {
                 method: 'POST',
@@ -370,7 +370,7 @@ export default function UserCart() {
 
       // Normalize API base URL to always include '/api'
       const API_BASE_URL = (() => {
-        const base = (import.meta as any).env?.VITE_API_URL as string | undefined;
+        const base = import.meta.env.VITE_API_URL as string | undefined;
         if (!base) return 'http://localhost:5000/api';
         return base.endsWith('/api') ? base : `${base}/api`;
       })();
@@ -427,7 +427,7 @@ export default function UserCart() {
 
       // Normalize API base URL to always include '/api'
       const API_BASE_URL = (() => {
-        const base = (import.meta as any).env?.VITE_API_URL as string | undefined;
+        const base = import.meta.env.VITE_API_URL as string | undefined;
         if (!base) return 'http://localhost:5000/api';
         return base.endsWith('/api') ? base : `${base}/api`;
       })();
@@ -491,7 +491,7 @@ export default function UserCart() {
     setIsProcessing(true);
 
     try {
-      const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+      const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 
       if (selectedPayment === 'online') {

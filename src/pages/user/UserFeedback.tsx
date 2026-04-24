@@ -38,7 +38,7 @@ const UserFeedback: React.FC = () => {
 
   // Normalize API base URL to always include '/api'
   const API_BASE_URL = (() => {
-    const base = (import.meta as any).env?.VITE_API_URL as string | undefined;
+    const base = import.meta.env.VITE_API_URL as string | undefined;
     if (!base) return 'http://localhost:5000/api';
     return base.endsWith('/api') ? base : `${base}/api`;
   })();

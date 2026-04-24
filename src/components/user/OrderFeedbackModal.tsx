@@ -24,7 +24,7 @@ export function OrderFeedbackModal({ order, isOpen, onClose, onSubmitSuccess }: 
   const { refreshRestaurants } = useUserData();
 
   // Normalize API base once for this component
-  const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+  const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api')
     ? API_ORIGIN
     : `${API_ORIGIN}/api`;

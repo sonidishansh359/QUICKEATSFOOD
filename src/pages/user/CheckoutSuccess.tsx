@@ -21,7 +21,7 @@ export default function CheckoutSuccess() {
     const token = localStorage.getItem('quickeats_auth');
     if (!token) return;
 
-    const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+    const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const socket = io(API_ORIGIN, {
       auth: { token: JSON.parse(token).token }
     });

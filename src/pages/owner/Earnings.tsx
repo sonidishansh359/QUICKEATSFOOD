@@ -43,7 +43,7 @@ const EarningsPage: React.FC = () => {
   const fetchEarnings = async () => {
     try {
       setLoading(true);
-      const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+      const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 
       const response = await fetch(`${API_BASE_URL}/owners/earnings`, {
@@ -83,7 +83,7 @@ const EarningsPage: React.FC = () => {
       // Fake delay for animation (2 seconds)
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+      const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 
       const response = await fetch(`${API_BASE_URL}/owners/payout`, {

@@ -65,7 +65,7 @@ export default function DeliveryFeedback() {
         }
 
         // Fetch delivery boy reviews using the /reviews/my-reviews endpoint
-        const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+        const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const API_BASE_URL = typeof API_ORIGIN === 'string' && API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
         const response = await fetch(`${API_BASE_URL}/delivery-boys/reviews/my-reviews`, {
           headers: {

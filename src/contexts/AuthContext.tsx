@@ -23,7 +23,7 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const API_BASE_URL = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN}/api`;
 const AUTH_STORAGE_KEY = 'quickeats_auth';
 

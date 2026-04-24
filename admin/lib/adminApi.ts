@@ -1,5 +1,5 @@
 export const fetchUnapprovedRestaurants = async (): Promise<AdminRestaurant[]> => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/restaurants/admin/unapproved`, {
     headers: {
       'x-admin-key': adminKey,
@@ -9,7 +9,7 @@ export const fetchUnapprovedRestaurants = async (): Promise<AdminRestaurant[]> =
 };
 
 export const approveRestaurant = async (id: string) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/restaurants/admin/approve/${id}`, {
     method: 'PUT',
     headers: {
@@ -18,7 +18,7 @@ export const approveRestaurant = async (id: string) => {
   });
   return handleResponse<{ message: string; restaurant: AdminRestaurant }>(res);
 };
-const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL || "http://localhost:5000") + "/api";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000") + "/api";
 
 export interface AdminStats {
   appRating: number;
@@ -53,7 +53,7 @@ export interface AdminRestaurant {
 }
 
 export const requestVerification = async (id: string, message?: string) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/restaurants/admin/verification-request/${id}`, {
     method: 'PUT',
     headers: {
@@ -94,7 +94,7 @@ export const fetchAdminRestaurants = async (): Promise<AdminRestaurant[]> => {
 };
 
 export const fetchAdminUsers = async (): Promise<AdminUser[]> => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/users/admin/all`, {
     headers: {
       'x-admin-key': adminKey,
@@ -104,7 +104,7 @@ export const fetchAdminUsers = async (): Promise<AdminUser[]> => {
 };
 
 export const setUserBan = async (id: string, banned: boolean) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/users/admin/${id}/ban`, {
     method: 'PUT',
     headers: {
@@ -117,7 +117,7 @@ export const setUserBan = async (id: string, banned: boolean) => {
 };
 
 export const deleteAdminRestaurant = async (id: string) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/restaurants/${id}/admin`, {
     method: 'DELETE',
     headers: {
@@ -128,7 +128,7 @@ export const deleteAdminRestaurant = async (id: string) => {
 };
 
 export const hardDeleteAdminRestaurant = async (id: string) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const res = await fetch(`${API_BASE_URL}/restaurants/${id}/admin/hard`, {
     method: 'DELETE',
     headers: {
@@ -152,7 +152,7 @@ export const pingApi = async (): Promise<{ ok: boolean; message?: string }> => {
   }
 };
 export const fetchAdminBalance = async () => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
   console.log('[AdminAPI] Fetching balance. Token present:', !!token, 'Token length:', token?.length);
 
@@ -166,7 +166,7 @@ export const fetchAdminBalance = async () => {
 };
 
 export const fetchAdminTransactions = async () => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
   console.log('[AdminAPI] Fetching transactions. Token present:', !!token);
 
@@ -180,7 +180,7 @@ export const fetchAdminTransactions = async () => {
 };
 
 export const addAdminMoney = async (amount: number) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
 
   const res = await fetch(`${API_BASE_URL}/admin-earnings/add-money`, {
@@ -196,7 +196,7 @@ export const addAdminMoney = async (amount: number) => {
 };
 
 export const withdrawAdminMoney = async (amount: number) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
 
   const res = await fetch(`${API_BASE_URL}/admin-earnings/withdraw`, {
@@ -212,7 +212,7 @@ export const withdrawAdminMoney = async (amount: number) => {
 };
 
 export const fetchAdminReports = async (params: Record<string, any>) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
   const query = new URLSearchParams(params).toString();
 
@@ -226,7 +226,7 @@ export const fetchAdminReports = async (params: Record<string, any>) => {
 };
 
 export const exportAdminReports = async (type: 'csv' | 'pdf', params: Record<string, any>) => {
-  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY || 'quickeats-admin';
+  const adminKey = import.meta.env.VITE_ADMIN_API_KEY || 'quickeats-admin';
   const token = localStorage.getItem('adminToken');
   const query = new URLSearchParams(params).toString();
 

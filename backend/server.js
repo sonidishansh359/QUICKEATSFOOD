@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -17,7 +18,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1:8081',
   'http://localhost:8082',
-  'http://127.0.0.1:8082'
+  'http://127.0.0.1:8082',
+  'https://quickeatsfood.vercel.app'
 ];
 
 const corsOptions = {
@@ -29,7 +31,8 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1 ||
       origin.startsWith('http://10.') ||
       origin.startsWith('http://192.168.') ||
-      origin.startsWith('http://172.')) {
+      origin.startsWith('http://172.') ||
+      origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);

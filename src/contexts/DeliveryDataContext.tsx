@@ -427,7 +427,7 @@ export function DeliveryDataProvider({ children }: { children: ReactNode }) {
     console.log('🔌 Connecting to socket as delivery boy...');
 
     // Connect to socket with authentication and reconnection options
-    const socket: Socket = io('http://localhost:5000', {
+    const socket: Socket = io(API_ORIGIN, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,

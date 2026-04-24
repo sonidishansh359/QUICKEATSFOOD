@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Order Tracking (User)</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        #info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0284c7;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info-panel">
+        <div class="status-badge">Live Tracking</div>
+        <div id="status-message">Connecting to live feed...</div>
+    </div>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // TODO: Replace with your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // --- MAP SETUP ---
+        const map = L.map('map', {
+            zoomControl: false, // Cleaner UI
+            attributionControl: false
+        }).setView([20.5937, 78.9629], 5); // Default India
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // MARKER ICONS
+        const userIcon = L.divIcon({
+            className: 'custom-user-icon',
+            html: `<div style="background-color: #3b82f6; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        const deliveryIcon = L.divIcon({
+            className: 'custom-delivery-icon',
+            html: `<div style="background-color: #ef4444; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">🛵</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        });
+
+        // --- STATE ---
+        let userMarker = null;
+        let deliveryMarker = null;
+        let routePolyline = null;
+        let userLocation = { lat: 28.6139, lng: 77.2090 }; // Default User Location
+        let deliveryLocation = null;
+        let isInitialFit = true; // Flag for first bound fit
+
+        // Simulate getting user location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                updateMapState();
+            });
+        }
+
+        // --- FIREBASE LISTENER ---
+        const trackingRef = ref(database, 'tracking/deliveryBoyLocation');
+
+        onValue(trackingRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // Check if meaningful update
+                const isNewLoc = !deliveryLocation || deliveryLocation.lat !== data.lat || deliveryLocation.lng !== data.lng;
+                deliveryLocation = { lat: data.lat, lng: data.lng };
+
+                document.getElementById('status-message').innerText = "On the way";
+
+                if (isNewLoc) {
+                    updateMapState();
+                }
+            } else {
+                document.getElementById('status-message').innerText = "Waiting for delivery partner...";
+            }
+        });
+
+        // --- ROUTING LOGIC ---
+        function decodePolyline(str, precision) {
+            var index = 0,
+                lat = 0,
+                lng = 0,
+                coordinates = [],
+                shift = 0,
+                result = 0,
+                byte = null,
+                latitude_change,
+                longitude_change,
+                factor = Math.pow(10, precision || 5);
+
+            while (index < str.length) {
+                byte = null;
+                shift = 0;
+                result = 0;
+
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+
+                latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+                shift = result = 0;
+
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+
+                longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+                lat += latitude_change;
+                lng += longitude_change;
+
+                coordinates.push([lat / factor, lng / factor]);
+            }
+
+            return coordinates;
+        }
+
+        async function fetchRoute(start, end) {
+            try {
+                // OSRM Public Server (Demo only - respect usage limits)
+                const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=polyline`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    return decodePolyline(data.routes[0].geometry);
+                }
+                return null;
+            } catch (error) {
+                console.error("Routing Error:", error);
+                return null;
+            }
+        }
+
+        // --- CORE UPDATE LOGIC ---
+        async function updateMapState() {
+            // 1. Draw/Update USER Marker
+            if (userLocation) {
+                if (!userMarker) {
+                    userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map);
+                } else {
+                    userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+                }
+            }
+
+            // 2. Draw/Update DELIVERY Marker && Route
+            if (deliveryLocation) {
+                if (!deliveryMarker) {
+                    deliveryMarker = L.marker([deliveryLocation.lat, deliveryLocation.lng], { icon: deliveryIcon }).addTo(map);
+                } else {
+                    deliveryMarker.setLatLng([deliveryLocation.lat, deliveryLocation.lng]);
+                }
+
+                // Update Route
+                if (userLocation) {
+                    const routeCoords = await fetchRoute(userLocation, deliveryLocation);
+
+                    // Fallback to straight line if routing fails
+                    const latlngs = routeCoords || [
+                        [userLocation.lat, userLocation.lng],
+                        [deliveryLocation.lat, deliveryLocation.lng]
+                    ];
+
+                    if (!routePolyline) {
+                        routePolyline = L.polyline(latlngs, {
+                            color: '#3b82f6',
+                            weight: 5,
+                            opacity: 0.8,
+                            lineJoin: 'round'
+                        }).addTo(map);
+                    } else {
+                        routePolyline.setLatLngs(latlngs);
+                    }
+
+                    // --- STRICT VIEWPORT CONTROL ---
+                    const bounds = L.latLngBounds(latlngs);
+
+                    // If it's the very first load, we MUST fit bounds
+                    if (isInitialFit) {
+                        map.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 16,
+                            animate: true,
+                            duration: 1.0
+                        });
+                        isInitialFit = false;
+                        return;
+                    }
+
+                    // Otherwise, ONLY update view if markers go near the edge or outside
+                    const currentBounds = map.getBounds();
+                    const safeZone = currentBounds.pad(-0.1);
+
+                    const userVisible = safeZone.contains([userLocation.lat, userLocation.lng]);
+                    const deliveryVisible = safeZone.contains([deliveryLocation.lat, deliveryLocation.lng]);
+
+                    if (!userVisible || !deliveryVisible) {
+                        map.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 16,
+                            animate: true,
+                            duration: 0.8
+                        });
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

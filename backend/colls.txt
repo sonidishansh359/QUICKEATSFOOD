@@ -1,0 +1,14 @@
+deliveryboys
+likeditems
+otpverifications
+wallets
+transactions
+admins
+restaurants
+deliveryearnings
+reviews
+users
+owners
+menuitems
+deliverypayouts
+orders

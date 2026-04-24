@@ -1,0 +1,242 @@
+# Data Dictionary
+
+## 1. User
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| name               | String           | 255              | User's full name                            |                                     | No       |              |
+| email              | String           | 255              | User's email address                        | UNIQUE                              | No       |              |
+| phone              | String           | 20               | User's phone number                         |                                     | Yes      |              |
+| password           | String           | 255              | Hashed password                             |                                     | No       |              |
+| role               | String           | 20               | User role (user, owner, delivery_boy)       | ENUM                                | No       |              |
+| resetOTP           | String           | 10               | OTP for password reset                      |                                     | Yes      |              |
+| resetOTPExpiry     | Date             | -                | OTP expiry time                             |                                     | Yes      |              |
+| location           | GeoJSON (Point)  | [lng, lat]       | User's geolocation                          | 2dsphere index                      | Yes      | [0,0]        |
+| deleted            | Boolean          | -                | Soft-delete flag                            |                                     | Yes      | false        |
+| deletedAt          | Date             | -                | Deletion timestamp                          |                                     | Yes      |              |
+| recoveryToken      | String           | 255              | Account recovery token                      |                                     | Yes      |              |
+| recoveryRequested  | Boolean          | -                | Recovery request status                     |                                     | Yes      | false        |
+| banned             | Boolean          | -                | Ban status                                  |                                     | Yes      | false        |
+| bannedAt           | Date             | -                | Ban timestamp                               |                                     | Yes      |              |
+| address            | String           | 255              | User's address                              |                                     | Yes      |              |
+| city               | String           | 100              | City                                        |                                     | Yes      |              |
+| state              | String           | 100              | State                                       |                                     | Yes      |              |
+| zipCode            | String           | 20               | Zip code                                    |                                     | Yes      |              |
+| lastLocationUpdate | Date             | -                | Last location update                        |                                     | Yes      |              |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 2. Owner
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| user               | ObjectId         | 12 bytes         | Reference to User                           | FOREIGN KEY → User(_id)             | No       |              |
+| restaurants        | [ObjectId]       | Array            | List of owned restaurants                    | FOREIGN KEY → Restaurant(_id)       | Yes      | []           |
+| earnings           | Number           | Double           | Total earnings                              |                                     | Yes      | 0            |
+| availableBalance   | Number           | Double           | Withdrawable balance                        |                                     | Yes      | 0            |
+| location           | GeoJSON (Point)  | [lng, lat]       | Owner's geolocation                         | 2dsphere index                      | Yes      | [0,0]        |
+| address            | String           | 255              | Owner's address                             |                                     | Yes      |              |
+| lastLocationUpdate | Date             | -                | Last location update                        |                                     | Yes      |              |
+| bankDetails        | Object           | -                | Bank account details                        |                                     | Yes      | See below    |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+**bankDetails**:  
+- accountNumber (String, 20, default: '1234567890')  
+- ifsc (String, 20, default: 'SBIN0001234')  
+- beneficiaryName (String, 100, default: 'Test Owner')
+
+---
+
+## 3. Restaurant
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| name               | String           | 255              | Restaurant name                             |                                     | No       |              |
+| description        | String           | 500              | Description                                 |                                     | Yes      |              |
+| cuisine            | String           | 100              | Cuisine type                                |                                     | Yes      |              |
+| address            | String           | 255              | Address                                     |                                     | No       |              |
+| phone              | String           | 20               | Phone number                                |                                     | Yes      |              |
+| image              | String           | 255              | Image URL                                   |                                     | No       |              |
+| isOpen             | Boolean          | -                | Open status                                 |                                     | Yes      | true         |
+| rating             | Number           | Double           | Average rating                              | Derived                             | Yes      | 0            |
+| deliveryTime       | String           | 20               | Estimated delivery time                     |                                     | Yes      |              |
+| minOrder           | Number           | Double           | Minimum order amount                        |                                     | Yes      | 10           |
+| openingTime        | String           | 5 (HH:mm)        | Opening time                                |                                     | Yes      |              |
+| openingPeriod      | String           | 2                | Opening period (AM/PM)                      | ENUM                                | Yes      |              |
+| closingTime        | String           | 5 (HH:mm)        | Closing time                                |                                     | Yes      |              |
+| closingPeriod      | String           | 2                | Closing period (AM/PM)                      | ENUM                                | Yes      |              |
+| location           | GeoJSON (Point)  | [lng, lat]       | Geolocation                                 | 2dsphere index                      | Yes      | [0,0]        |
+| city               | String           | 100              | City                                        |                                     | Yes      |              |
+| state              | String           | 100              | State                                       |                                     | Yes      |              |
+| zipCode            | String           | 20               | Zip code                                    |                                     | Yes      |              |
+| owner              | ObjectId         | 12 bytes         | Reference to Owner                          | FOREIGN KEY → Owner(_id)            | Yes      |              |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+| deleted            | Boolean          | -                | Soft-delete flag                            |                                     | Yes      | false        |
+| deletedAt          | Date             | -                | Deletion timestamp                          |                                     | Yes      |              |
+| deletedBy          | String           | 100              | Deleted by (user/admin)                     |                                     | Yes      |              |
+
+---
+
+## 4. MenuItem
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| name               | String           | 255              | Item name                                   |                                     | No       |              |
+| description        | String           | 500              | Item description                            |                                     | Yes      |              |
+| price              | Number           | Double           | Item price                                  |                                     | No       |              |
+| image              | String           | 255              | Image URL                                   |                                     | No       |              |
+| category           | String           | 100              | Category                                    |                                     | Yes      |              |
+| restaurant         | ObjectId         | 12 bytes         | Reference to Restaurant                     | FOREIGN KEY → Restaurant(_id)       | No       |              |
+| isVeg              | Boolean          | -                | Vegetarian flag                             |                                     | Yes      | true         |
+| isAvailable        | Boolean          | -                | Availability flag                           |                                     | Yes      | true         |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 5. Order
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| user               | ObjectId         | 12 bytes         | Reference to User                           | FOREIGN KEY → User(_id)             | No       |              |
+| restaurant         | ObjectId         | 12 bytes         | Reference to Restaurant                     | FOREIGN KEY → Restaurant(_id)       | No       |              |
+| items              | Array            | -                | Ordered items (menuItem, name, qty, price)  | FOREIGN KEY → MenuItem(_id)         | No       |              |
+| deliveryAddress    | String           | 255              | Delivery address                            |                                     | No       |              |
+| totalAmount        | Number           | Double           | Total order amount                          |                                     | No       |              |
+| ownerEarning       | Number           | Double           | Owner's earning from order                  |                                     | Yes      | 0            |
+| subtotal           | Number           | Double           | Subtotal before discount                    |                                     | Yes      |              |
+| discountAmount     | Number           | Double           | Discount applied                            |                                     | Yes      | 0            |
+| promoCode          | ObjectId         | 12 bytes         | Reference to PromoCode                      | FOREIGN KEY → PromoCode(_id)        | Yes      |              |
+| specialInstructions| String           | 500              | Special instructions                        |                                     | Yes      |              |
+| paymentMethod      | String           | 20               | Payment method                              | ENUM                                | Yes      | 'cod'        |
+| paymentStatus      | String           | 20               | Payment status                              | ENUM                                | Yes      | 'unpaid'     |
+| razorpayOrderId    | String           | 50               | Razorpay order ID                           |                                     | Yes      |              |
+| razorpayPaymentId  | String           | 50               | Razorpay payment ID                         |                                     | Yes      |              |
+| razorpaySignature  | String           | 100              | Razorpay signature                          |                                     | Yes      |              |
+| status             | String           | 20               | Order status                                | ENUM                                | Yes      | 'placed'     |
+| deliveryStatus     | String           | 20               | Delivery status                             | ENUM                                | Yes      | 'assigned'   |
+| deliveryBoy        | ObjectId         | 12 bytes         | Reference to DeliveryBoy                    | FOREIGN KEY → DeliveryBoy(_id)      | Yes      |              |
+| acceptedAt         | Date             | -                | Order accepted timestamp                    |                                     | Yes      |              |
+| deliveryOTP        | String           | 10               | Delivery OTP                                |                                     | Yes      |              |
+| deliveryOTPExpiry  | Date             | -                | OTP expiry                                  |                                     | Yes      |              |
+| deliveryOTPAttempts| Number           | Int              | OTP attempts                                |                                     | Yes      | 0            |
+| isOTPVerified      | Boolean          | -                | OTP verified flag                           |                                     | Yes      | false        |
+| deliveredAt        | Date             | -                | Delivery timestamp                          |                                     | Yes      |              |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 6. DeliveryBoy
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| user               | ObjectId         | 12 bytes         | Reference to User                           | FOREIGN KEY → User(_id)             | No       |              |
+| phone              | String           | 20               | Phone number                                |                                     | Yes      |              |
+| vehicleType        | String           | 20               | Vehicle type                                | ENUM                                | No       |              |
+| licenseNumber      | String           | 50               | License number                              |                                     | No       |              |
+| isAvailable        | Boolean          | -                | Availability flag                           |                                     | Yes      | true         |
+| location           | GeoJSON (Point)  | [lng, lat]       | Geolocation                                 | 2dsphere index                      | Yes      | [0,0]        |
+| address            | String           | 255              | Address                                     |                                     | Yes      |              |
+| lastLocationUpdate | Date             | -                | Last location update                        |                                     | Yes      |              |
+| currentOrders      | [ObjectId]       | Array            | Current orders                              | FOREIGN KEY → Order(_id)            | Yes      | []           |
+| earnings           | Number           | Double           | Total earnings                              |                                     | Yes      | 0            |
+| availableBalance   | Number           | Double           | Withdrawable balance                        |                                     | Yes      | 0            |
+| earningsBreakdown  | Object           | -                | Earnings breakdown (today, week, etc.)       |                                     | Yes      | See below    |
+| deliveryHistory    | Array            | -                | Delivery history                            | Embedded subdocs                    | Yes      | []           |
+| totalDeliveries    | Number           | Int              | Total deliveries                            |                                     | Yes      | 0            |
+| rating             | Number           | Double           | Average rating                              | Derived                             | Yes      | 0            |
+| totalRatings       | Number           | Int              | Total ratings                               |                                     | Yes      | 0            |
+| reviews            | [ObjectId]       | Array            | Reviews received                            | FOREIGN KEY → Review(_id)           | Yes      | []           |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+**earningsBreakdown**:  
+- today, todayOrders, thisWeek, weeklyOrders, thisMonth, monthlyOrders, pending (Number, default: 0)  
+- lastResetDate (String, default: today)
+
+---
+
+## 7. Review
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| user               | ObjectId         | 12 bytes         | Reference to User                           | FOREIGN KEY → User(_id)             | No       |              |
+| restaurant         | ObjectId         | 12 bytes         | Reference to Restaurant                     | FOREIGN KEY → Restaurant(_id)       | No       |              |
+| order              | ObjectId         | 12 bytes         | Reference to Order                          | FOREIGN KEY → Order(_id)            | Yes      |              |
+| rating             | Number           | Int (1-5)        | Restaurant rating                           | CHECK (1-5)                         | No       |              |
+| comment            | String           | 500              | Review comment                              |                                     | Yes      |              |
+| deliveryBoy        | ObjectId         | 12 bytes         | Reference to DeliveryBoy                    | FOREIGN KEY → DeliveryBoy(_id)      | Yes      |              |
+| deliveryRating     | Number           | Int (1-5)        | Delivery rating                             | CHECK (1-5)                         | Yes      |              |
+| deliveryComment    | String           | 500              | Delivery review comment                     |                                     | Yes      |              |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 8. PromoCode
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| code               | String           | 20               | Promo code                                  | UNIQUE, UPPERCASE                   | No       |              |
+| restaurant         | ObjectId         | 12 bytes         | Reference to Restaurant                     | FOREIGN KEY → Restaurant(_id)       | No       |              |
+| owner              | ObjectId         | 12 bytes         | Reference to Owner                          | FOREIGN KEY → Owner(_id)            | No       |              |
+| discountPercentage | Number           | Int (0-100)      | Discount percentage                         | CHECK (0-100)                       | Yes      | 10           |
+| description        | String           | 255              | Description                                 |                                     | Yes      |              |
+| isActive           | Boolean          | -                | Active status                               |                                     | Yes      | true         |
+| usageLimit         | Number           | Int              | Usage limit                                 |                                     | Yes      | null         |
+| usageCount         | Number           | Int              | Usage count                                 |                                     | Yes      | 0            |
+| minOrderAmount     | Number           | Double           | Minimum order amount                        |                                     | Yes      | 0            |
+| expiryDate         | Date             | -                | Expiry date                                 |                                     | Yes      | null         |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 9. Payout
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| owner              | ObjectId         | 12 bytes         | Reference to Owner                          | FOREIGN KEY → Owner(_id)            | No       |              |
+| amount             | Number           | Double           | Payout amount                               |                                     | No       |              |
+| status             | String           | 20               | Payout status                               | ENUM                                | Yes      | 'pending'    |
+| razorpayPayoutId   | String           | 50               | Razorpay payout ID                          |                                     | Yes      |              |
+| method             | String           | 20               | Payout method                               |                                     | Yes      | 'bank_transfer'|
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 10. Transaction
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| owner              | ObjectId         | 12 bytes         | Reference to Owner                          | FOREIGN KEY → Owner(_id)            | Yes      |              |
+| deliveryBoy        | ObjectId         | 12 bytes         | Reference to DeliveryBoy                    | FOREIGN KEY → DeliveryBoy(_id)      | Yes      |              |
+| amount             | Number           | Double           | Transaction amount                          |                                     | No       |              |
+| type               | String           | 20               | Transaction type                            | ENUM                                | No       |              |
+| status             | String           | 20               | Transaction status                          | ENUM                                | Yes      | 'success'    |
+| referenceId        | String           | 50               | Reference ID (order/payment/payout)         |                                     | Yes      |              |
+| description        | String           | 255              | Description                                 |                                     | Yes      |              |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---
+
+## 11. Suggestion
+
+| Column Name        | Data Type         | Size/Format      | Description                                 | Constraints                        | Nullable | Default Value |
+|--------------------|------------------|------------------|---------------------------------------------|-------------------------------------|----------|--------------|
+| _id                | ObjectId         | 12 bytes         | Unique identifier (Primary Key)             | PRIMARY KEY                         | No       | Auto-gen     |
+| order              | ObjectId         | 12 bytes         | Reference to Order                          | FOREIGN KEY → Order(_id)            | No       |              |
+| restaurant         | ObjectId         | 12 bytes         | Reference to Restaurant                     | FOREIGN KEY → Restaurant(_id)       | No       |              |
+| owner              | ObjectId         | 12 bytes         | Reference to Owner                          | FOREIGN KEY → Owner(_id)            | No       |              |
+| user               | ObjectId         | 12 bytes         | Reference to User                           | FOREIGN KEY → User(_id)             | No       |              |
+| text               | String           | 500              | Suggestion text                             |                                     | Yes      | ''           |
+| createdAt          | Date             | -                | Creation timestamp                          | AUDIT FIELD                         | No       | Date.now     |
+
+---

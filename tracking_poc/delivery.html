@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Boy Tracker (Sender)</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        #status-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+        }
+
+        .indicator.active {
+            background-color: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .indicator.error {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="status-bar">
+        <div id="indicator" class="indicator"></div>
+        <span id="status-text">Initializing GPS...</span>
+    </div>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // TODO: Replace with your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // --- MAP SETUP ---
+        // Initialize map only once
+        const map = L.map('map').setView([20.5937, 78.9629], 5); // Default to India center
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom Red Marker for Delivery Boy
+        const deliveryIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: #ef4444; width: 15px; height: 15px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        let myMarker = null;
+        let watchId = null;
+        let lastUpdateTime = 0;
+        const statusText = document.getElementById('status-text');
+        const indicator = document.getElementById('indicator');
+
+        // --- TRACKING LOGIC ---
+        const startTracking = () => {
+            if (!navigator.geolocation) {
+                statusText.innerText = "Geolocation not supported";
+                indicator.classList.add('error');
+                return;
+            }
+
+            statusText.innerText = "Waiting for GPS...";
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    const now = Date.now();
+
+                    // Update UI
+                    statusText.innerText = "Tracking Active";
+                    indicator.classList.add('active');
+                    indicator.classList.remove('error');
+
+                    // Update Map Marker
+                    if (!myMarker) {
+                        myMarker = L.marker([latitude, longitude], { icon: deliveryIcon }).addTo(map);
+                        map.setView([latitude, longitude], 16); // Zoom in on first fix
+                    } else {
+                        myMarker.setLatLng([latitude, longitude]);
+                        // Only auto-pan if user hasn't dragged map manually? 
+                        // For sender, keeping centered is usually good UX.
+                        map.panTo([latitude, longitude]);
+                    }
+
+                    // Throttle Firebase Updates (Every 3 seconds)
+                    if (now - lastUpdateTime > 3000) {
+                        updateFirebase(latitude, longitude);
+                        lastUpdateTime = now;
+                    }
+                },
+                (error) => {
+                    console.error("GPS Error:", error);
+                    statusText.innerText = "GPS Error: " + error.message;
+                    indicator.classList.remove('active');
+                    indicator.classList.add('error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 20000
+                }
+            );
+        };
+
+        const updateFirebase = (lat, lng) => {
+            set(ref(database, 'tracking/deliveryBoyLocation'), {
+                lat: lat,
+                lng: lng,
+                lastUpdated: serverTimestamp()
+            }).then(() => {
+                console.log("Firebase updated:", lat, lng);
+            }).catch((err) => {
+                console.error("Firebase update failed:", err);
+            });
+        };
+
+        // Start immediately
+        startTracking();
+
+        // Cleanup
+        window.onbeforeunload = () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,2 @@
+userLocation: [72.8634,22.6916]
+restLocation: [72.8634,22.6916]

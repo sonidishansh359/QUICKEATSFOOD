@@ -52,11 +52,20 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/restaurant', {
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/restaurant';
+if (!process.env.MONGO_URI) {
+  console.warn('⚠️ WARNING: MONGO_URI environment variable is not set. Falling back to localhost MongoDB.');
+}
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+}).then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    if (err.message.includes('ECONNREFUSED')) {
+      console.error('👉 Tip: Ensure your MONGO_URI is correct and your IP is whitelisted in MongoDB Atlas (add 0.0.0.0/0 for Render).');
+    }
+  });
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

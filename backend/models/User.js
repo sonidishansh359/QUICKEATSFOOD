@@ -37,7 +37,9 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Create 2dsphere index for geospatial queries
+// Create indexes
 userSchema.index({ 'location': '2dsphere' });
+// Make phone index unique but sparse to allow multiple nulls (for users who don't provide phone)
+userSchema.index({ 'phone': 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('User', userSchema);

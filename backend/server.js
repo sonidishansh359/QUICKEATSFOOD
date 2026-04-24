@@ -67,6 +67,18 @@ mongoose.connect(mongoURI, {
     }
   });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'Server is running',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 
+              mongoose.connection.readyState === 2 ? 'Connecting' : 
+              mongoose.connection.readyState === 3 ? 'Disconnecting' : 'Disconnected',
+    mongoUriSet: !!process.env.MONGO_URI,
+    time: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
